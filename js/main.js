@@ -27,14 +27,43 @@ class Cart {
 
 class CartItem {
     constructor(product) {
-        // this.title;          // Наименование товара
-        // this.price;          // Цена товара
-        // this.id;             // ID товара
-        // this.count;          // Кол-во товаров в корзине
+        let { title, price, id } = product;
+        this.title = title;
+        this.price = price;
+        this.id = id;
+        this.count = 1;
     }
 
-    // render() {              // Метод получения HTML кода представляющего экземпляр класса CartItem
-    // }                       //
+    incrementCount() {
+        this.count++;
+        this.onCnahgeCount();
+    }
+
+    decrementCount() {
+        if (this.count <= 0) { return; }
+
+        this.count--;
+        this.onCnahgeCount();
+    }
+
+    getTotalPrice() {
+        return this.count * this.price;
+    }
+
+    onCnahgeCount() {
+
+    }
+
+    render() {
+        return `<div>
+                    <span>${this.title}</span>
+                    <span>${this.price}</span>
+                    <button>-</button>
+                    <span>${this.count}</span>
+                    <button>+</button>
+                    <span>${this.totalPrice()}</span>
+                </div>`;
+    }
 }
 
 class Product {

@@ -68,22 +68,22 @@ class ProductList {
         }
     }
 
-    addItem(product) {
+    add(product) {
         this._products.push(new Product(product, ImageRepo.getImage(product.title)));
     }
 
-    addArray(products, shouldClear = true) {
+    addProducts(products, shouldClear = true) {
         if (Array.isArray(products)) {
             if (shouldClear) {
                 this.clear();
             }
 
             for (const product of products) {
-                this.addItem(product);
+                this.add(product);
             }
         }
         else {
-            console.error("ProductList.addArray(products, shouldClear) invalid argument exception, products is not array.");
+            throw new Error("ProductList.addProducts(products, shouldClear) invalid argument exception, products is not array.");
         }
         return this;
     }
@@ -135,6 +135,6 @@ class ProductRepo {
 
 
 const productList = new ProductList(".products");
-productList.addArray(ProductRepo.GetProductsAll()).render();
+productList.addProducts(ProductRepo.GetProductsAll()).render();
 
 console.log(`ProductList total price: ${productList.getTotalPrice()}`);

@@ -1,3 +1,5 @@
+const API = "https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/";
+
 class Cart {
     constructor(containerSelector) {
         // this._items;     //  Массив для хранения товаров(экземпляров CartItem) в корзине
@@ -36,8 +38,7 @@ class CartItem {
 }
 
 class Product {
-    constructor(product, image = ImageRepo.gag) {
-        let { title, price, id } = product;
+    constructor(title = "", price = 0, id = 0, image = ImageRepo.gag) {
         this.title = title;
         this.price = price;
         this.id = id;
@@ -69,7 +70,7 @@ class ProductList {
     }
 
     add(product) {
-        this._products.push(new Product(product, ImageRepo.getImage(product.title)));
+        this._products.push(product);
     }
 
     addProducts(products, shouldClear = true) {
@@ -110,31 +111,27 @@ class ImageRepo {
 }
 
 class ProductRepo {
-    static GetProductsAll() {
-        return [
-            { id: 1, title: 'Notebook', price: 2000 },
-            { id: 2, title: 'Keyboard', price: 200 },
-            { id: 3, title: 'Mouse', price: 100 },
-            { id: 4, title: 'Gamepad', price: 87 },
+    static GetProductsAllAsync() {
+        return fetch(`${API}/catalogData.json`)
+            .then(response => response.json())
+            .then(json => this._mapperFromGBAsync(json));
+    }
 
-            { id: 1, title: 'Notebook', price: 2000 },
-            { id: 2, title: 'Keyboard', price: 200 },
-            { id: 3, title: 'Mouse', price: 100 },
-            { id: 4, title: 'Gamepad', price: 87 },
-            { id: 1, title: 'Notebook', price: 2000 },
-            { id: 2, title: 'Keyboard', price: 200 },
-            { id: 3, title: 'Mouse', price: 100 },
-            { id: 4, title: 'Gamepad', price: 87 },
-            { id: 1, title: 'Notebook', price: 2000 },
-            { id: 2, title: 'Keyboard', price: 200 },
-            { id: 3, title: 'Mouse', price: 100 },
-            { id: 4, title: 'Gamepad', price: 87 },
-        ];
+    static async _mapperFromGBAsync(origin) {
+        return this._mapperFromGB(origin);
+    }
+
+    static _mapperFromGB(origin) {
+        let result = [];
+        for (const originItem of origin) {
+            let { id_product, product_name, price } = originItem;
+            result.push(new Product(product_name, price, id_product));
+        }
+
+        return result;
     }
 }
 
 
 const productList = new ProductList(".products");
-productList.addProducts(ProductRepo.GetProductsAll()).render();
-
-console.log(`ProductList total price: ${productList.getTotalPrice()}`);
+ProductRepo.GetProductsAllAsync().then(products => productList.addProducts(products).render());

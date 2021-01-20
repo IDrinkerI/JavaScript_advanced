@@ -21,10 +21,19 @@
     <main class="content">
         <div class="container">
             <div class="products"></div>
+            <div class="cartTest"></div>
+            <button onclick="testHandler()">click me</button>
         </div>
+
     </main>
 
     <script src="js/main.js"></script>
+    <script>
+        function testHandler() {
+            cart.add(productList._products[1]);
+            cart.render();
+        }
+    </script>
 </body>
 
 </html>

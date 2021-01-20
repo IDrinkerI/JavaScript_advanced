@@ -1,28 +1,85 @@
 const API = "https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/";
 
+
+class TryGetResult {
+    constructor(result = false, object = null) {
+        this.result = result;
+        this.object = object;
+    }
+}
+
 class Cart {
     constructor(containerSelector) {
-        // this._items;     //  Массив для хранения товаров(экземпляров CartItem) в корзине
-        //this._container;  //  HTML контейнер для отображаения корзины 
+        this._items = [];
+        this._container = document.querySelector(containerSelector);
     }
 
-    // add(product) {       //  Добавляет товар в корзину
-    // }                    //
+    add(product) {
+        let { result: isFound } = this.tryGetCartItem(product.id);
 
-    // remove(product) {    //  Удаляет товар из корзины
-    // }                    //
+        if (isFound) {
+            this.incrementItemCount(product.id);
+        }
+        else {
+            let newItem = new CartItem(product);
+            newItem.onCnahgeCount = updateCartHandler;
+            this._items.push(newItem);
+        }
+    }
 
-    // clear() {            //  Очищает корзину
-    // }                    //
+    remove(product) {
+        let { object: cartItem, result: isFound } = this.tryGetCartItem(product.id);
 
-    // contains(product) {  //  Проверяет наличие товара в корзине
-    // }                    //  необходим управление кол-вом товара одного вида в корзине
+        if (isFound) {
+            cartItem.setCount(0);
+        }
+    }
 
-    // render() {           //  Заполняет _container HTML кодом
-    // }                    //
+    clear() {
+        this._items = [];
+    }
+
+    tryGetCartItem(id) {
+        for (const item of this._items) {
+            if (item.id === id) {
+                return new TryGetResult(true, item);
+            }
+        }
+        return new TryGetResult();
+    }
+
+    render() {
+        this._container.innerHTML = "";
+
+        for (const item of this._items) {
+            this._container.insertAdjacentHTML("beforeend", item.render());
+        }
+    }
 
     // _getTotalPrice() {   //  Возвращает суммарную стоимость товаров в козине
     // }                    //
+
+    update() {
+        this._items = this._items.filter(item => item.getCount() > 0);
+
+        this.render();
+    }
+
+    incrementItemCount(id) {
+        let { object: cartItem, result: isFound } = this.tryGetCartItem(id);
+
+        if (isFound) {
+            cartItem.incrementCount();
+        }
+    }
+
+    decrementItemCount(id) {
+        let { object: cartItem, result: isFound } = this.tryGetCartItem(id);
+
+        if (isFound) {
+            cartItem.decrementCount();
+        }
+    }
 }
 
 class CartItem {
@@ -31,37 +88,46 @@ class CartItem {
         this.title = title;
         this.price = price;
         this.id = id;
-        this.count = 1;
+        this._count = 1;
+    }
+
+    getCount() {
+        return this._count;
+    }
+
+    setCount(count) {
+        if (typeof (count) != "number" || count < 0) { return; }
+
+        this._count = count;
+        this.onCnahgeCount();
     }
 
     incrementCount() {
-        this.count++;
+        this._count++;
         this.onCnahgeCount();
     }
 
     decrementCount() {
-        if (this.count <= 0) { return; }
+        if (this._count <= 0) { return; }
 
-        this.count--;
+        this._count--;
         this.onCnahgeCount();
     }
 
     getTotalPrice() {
-        return this.count * this.price;
+        return this._count * this.price;
     }
 
-    onCnahgeCount() {
-
-    }
+    onCnahgeCount() { }
 
     render() {
-        return `<div>
+        return `<div id="${this.id}">
                     <span>${this.title}</span>
-                    <span>${this.price}</span>
-                    <button>-</button>
-                    <span>${this.count}</span>
-                    <button>+</button>
-                    <span>${this.totalPrice()}</span>
+                    <span>$${this.price}</span>
+                    <button onclick="decrementButtonHandler(event)">-</button>
+                    <span>${this._count}</span>
+                    <button onclick="incrementButtonHandler(event)">+</button>
+                    <span>$${this.getTotalPrice()}</span>
                 </div>`;
     }
 }
@@ -161,6 +227,21 @@ class ProductRepo {
     }
 }
 
+function incrementButtonHandler(event) {
+    let id = parseInt(event.target.parentNode.id);
+    cart.incrementItemCount(id);
+}
+
+function decrementButtonHandler(event) {
+    let id = parseInt(event.target.parentNode.id);
+    cart.decrementItemCount(id);
+}
+
+function updateCartHandler() {
+    cart.update();
+}
 
 const productList = new ProductList(".products");
 ProductRepo.GetProductsAllAsync().then(products => productList.addProducts(products).render());
+
+const cart = new Cart(".cartTest");

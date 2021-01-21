@@ -91,9 +91,7 @@ class Cart {
         let title = `<p class="cart-title">Cart:</p>`;
         this._container.insertAdjacentHTML("beforeend", title);
 
-        for (const item of this._items) {
-            this._container.insertAdjacentHTML("beforeend", item.render());
-        }
+        this._items.forEach(item => this._container.insertAdjacentHTML("beforeend", item.render()));
 
         let totalPriceInfo = `<p class="cart-total_price">Goods count: ${this.getTotalCount()}. Total price: $${this.getTotalPrice()}</p>`;
         this._container.insertAdjacentHTML("beforeend", totalPriceInfo);
@@ -227,10 +225,7 @@ class ProductList {
 
     render() {
         this._container.innerHTML = "";
-
-        for (const product of this._products) {
-            this._container.insertAdjacentHTML("beforeend", product.render());
-        }
+        this._products.forEach(product => this._container.insertAdjacentHTML("beforeend", product.render()));
     }
 
     add(product) {

@@ -26,9 +26,11 @@ class Cart {
     constructor(containerSelector, infoWrapperSelector) {
         this._items = [];
         this._container = document.querySelector(containerSelector);
-        this._container.classList.add("cart");
-
         this._infoWrapper = document.querySelector(infoWrapperSelector);
+        this._infoField = this._createInfoField();
+
+        this._container.classList.add("cart");
+        this._infoWrapper.append(this._infoField);
         this._infoWrapper.append(this._createOpenCartButton());
 
         this.render();
@@ -82,6 +84,8 @@ class Cart {
     }
 
     render() {
+        this._infoField.innerText = `Goods count: ${this.getTotalCount()} Total price: $${this.getTotalPrice()}`;
+
         this._container.innerHTML = "";
 
         let title = `<p class="cart-title">Cart:</p>`;
@@ -144,6 +148,12 @@ class Cart {
         btn.innerText = "Cart";
         btn.onclick = ShopBehavior.cartOpenBtnHandler;
         return btn;
+    }
+
+    _createInfoField() {
+        let infoField = document.createElement("p");
+        infoField.classList.add("cart-info_field")
+        return infoField;
     }
 }
 

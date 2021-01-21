@@ -8,23 +8,41 @@ class TryGetResult {
     }
 }
 
+class HTMLIdPrefix {
+    constructor(prefix = "") {
+        this.idPrefix = prefix;
+    }
+
+    gethtmlId(id = 0) {
+        return `${this.idPrefix}${id}`;
+    }
+
+    getIdByhtmlId(htmlId) {
+        return parseInt(htmlId.slice(this.idPrefix.length));
+    }
+}
+
 class Cart {
     constructor(containerSelector) {
         this._items = [];
         this._container = document.querySelector(containerSelector);
+
+        this.render();
     }
 
     add(product) {
-        let { result: isFound } = this.tryGetCartItem(product.id);
+        let { result: isFound, object: cartItem } = this.tryGetCartItem(product.id);
 
         if (isFound) {
-            this.incrementItemCount(product.id);
+            cartItem.incrementCount();
         }
         else {
             let newItem = new CartItem(product);
-            newItem.onCnahgeCount = updateCartHandler;
+            newItem.onCnahgeCount = ShopBehavior.updateCartHandler;
             this._items.push(newItem);
         }
+
+        this.update();
     }
 
     remove(product) {
@@ -33,6 +51,8 @@ class Cart {
         if (isFound) {
             cartItem.setCount(0);
         }
+
+        this.update();
     }
 
     clear() {
@@ -54,10 +74,30 @@ class Cart {
         for (const item of this._items) {
             this._container.insertAdjacentHTML("beforeend", item.render());
         }
+
+        let totalPriceInfo = `<p>Goods count: ${this.getTotalCount()}. Total price: $${this.getTotalPrice()}</p>`;
+
+        this._container.insertAdjacentHTML("beforeend", totalPriceInfo);
     }
 
-    // _getTotalPrice() {   //  Возвращает суммарную стоимость товаров в козине
-    // }                    //
+    getTotalCount() {
+        let totalCount = 0;
+
+        for (const item of this._items) {
+            totalCount += item.getCount();
+        }
+
+        return totalCount
+    }
+
+    getTotalPrice() {
+        let totalPrice = 0;
+
+        for (const item of this._items) {
+            totalPrice += item.getTotalPrice();
+        }
+        return totalPrice;
+    }
 
     update() {
         this._items = this._items.filter(item => item.getCount() > 0);
@@ -65,16 +105,18 @@ class Cart {
         this.render();
     }
 
-    incrementItemCount(id) {
-        let { object: cartItem, result: isFound } = this.tryGetCartItem(id);
+    incrementItemCount(htmlId) {
+        let cartItemId = CartItem.getIdByhtmlId(htmlId);
+        let { object: cartItem, result: isFound } = this.tryGetCartItem(cartItemId);
 
         if (isFound) {
             cartItem.incrementCount();
         }
     }
 
-    decrementItemCount(id) {
-        let { object: cartItem, result: isFound } = this.tryGetCartItem(id);
+    decrementItemCount(htmlId) {
+        let cartItemId = CartItem.getIdByhtmlId(htmlId);
+        let { object: cartItem, result: isFound } = this.tryGetCartItem(cartItemId);
 
         if (isFound) {
             cartItem.decrementCount();
@@ -90,6 +132,10 @@ class CartItem {
         this.id = id;
         this._count = 1;
     }
+
+    static _idPrefix = new HTMLIdPrefix("cart_item_");
+
+    static getIdByhtmlId = (htmlId) => this._idPrefix.getIdByhtmlId(htmlId);
 
     getCount() {
         return this._count;
@@ -121,13 +167,13 @@ class CartItem {
     onCnahgeCount() { }
 
     render() {
-        return `<div id="${this.id}">
-                    <span>${this.title}</span>
-                    <span>$${this.price}</span>
-                    <button onclick="decrementButtonHandler(event)">-</button>
-                    <span>${this._count}</span>
-                    <button onclick="incrementButtonHandler(event)">+</button>
-                    <span>$${this.getTotalPrice()}</span>
+        return `<div class="cart_item" id="${CartItem._idPrefix.gethtmlId(this.id)}">
+                    <span class="cart_item-title">${this.title}</span>
+                    <span class="cart_item-price">Price: $${this.price}</span>
+                    <button class="cart_item-button" onclick="ShopBehavior.decrementButtonHandler(event)">-</button>
+                    <span class="cart_item-count">${this._count}</span>
+                    <button class="cart_item-button" onclick="ShopBehavior.incrementButtonHandler(event)">+</button>
+                    <span class="cart_item-total_price">Total: $${this.getTotalPrice()}</span>
                 </div>`;
     }
 }
@@ -140,12 +186,16 @@ class Product {
         this.image = image;
     }
 
+    static _idPrefix = new HTMLIdPrefix("product_");
+
+    static getIdByhtmlId = (htmlId) => this._idPrefix.getIdByhtmlId(htmlId);
+
     render() {
-        return `<div class="product_item">
+        return `<div class="product_item" id="${Product._idPrefix.gethtmlId(this.id)}">
                     <img src="${this.image}" alt="${this.title}">
                     <h3 class="product_item-title">${this.title}</h3>
                     <p class="product_item-price">price: $${this.price}</p>
-                    <button class="product_item-button">Add to cart</button>
+                    <button class="product_item-button" onclick="ShopBehavior.addProductButtonHandler(event)">Add to cart</button>
                 </div>`;
     }
 }
@@ -206,10 +256,14 @@ class ImageRepo {
 }
 
 class ProductRepo {
-    static GetProductsAllAsync() {
+    static getProductsAllAsync() {
         return fetch(`${API}/catalogData.json`)
             .then(response => response.json())
             .then(json => this._mapperFromGBAsync(json));
+    }
+
+    static async getProductByIdAsync(id = 0) {
+        return ProductRepo.getProductsAllAsync().then(products => products.find((product) => product.id === id));
     }
 
     static async _mapperFromGBAsync(origin) {
@@ -227,21 +281,40 @@ class ProductRepo {
     }
 }
 
-function incrementButtonHandler(event) {
-    let id = parseInt(event.target.parentNode.id);
-    cart.incrementItemCount(id);
+class ShopBehavior {
+    static _isSetup = false;
+
+    static setup(productListSelector, cartSelector) {
+        ShopBehavior.productList = new ProductList(productListSelector);
+        ShopBehavior.cart = new Cart(cartSelector);
+        ShopBehavior._isSetup = true;
+        return ShopBehavior;
+    }
+
+    static incrementButtonHandler(event) {
+        ShopBehavior.cart.incrementItemCount(event.target.parentNode.id);
+    }
+
+    static decrementButtonHandler(event) {
+        ShopBehavior.cart.decrementItemCount(event.target.parentNode.id);
+    }
+
+    static updateCartHandler() {
+        ShopBehavior.cart.update();
+    }
+
+    static addProductButtonHandler(event) {
+        let productId = Product.getIdByhtmlId(event.target.parentNode.id);
+        ProductRepo.getProductByIdAsync(productId).then(product => ShopBehavior.cart.add(product));
+    }
+
+    static run() {
+        if (ShopBehavior._isSetup) {
+            ProductRepo.getProductsAllAsync().then(products => ShopBehavior.productList.addProducts(products).render());
+            ShopBehavior.cart.render();
+        }
+        else {
+            throw new Error("ShopBehavior need setup before run");
+        }
+    }
 }
-
-function decrementButtonHandler(event) {
-    let id = parseInt(event.target.parentNode.id);
-    cart.decrementItemCount(id);
-}
-
-function updateCartHandler() {
-    cart.update();
-}
-
-const productList = new ProductList(".products");
-ProductRepo.GetProductsAllAsync().then(products => productList.addProducts(products).render());
-
-const cart = new Cart(".cartTest");

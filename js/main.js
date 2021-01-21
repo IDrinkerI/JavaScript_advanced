@@ -99,24 +99,9 @@ class Cart {
         this._container.insertAdjacentHTML("beforeend", totalPriceInfo);
     }
 
-    getTotalCount() {
-        let totalCount = 0;
+    getTotalCount = () => this._items.reduce((a, item) => a += item.getCount(), 0);
 
-        for (const item of this._items) {
-            totalCount += item.getCount();
-        }
-
-        return totalCount
-    }
-
-    getTotalPrice() {
-        let totalPrice = 0;
-
-        for (const item of this._items) {
-            totalPrice += item.getTotalPrice();
-        }
-        return totalPrice;
-    }
+    getTotalPrice = () => this._items.reduce((a, item) => a += item.getTotalPrice(), 0);
 
     update() {
         this._items = this._items.filter(item => item.getCount() > 0);
@@ -272,13 +257,7 @@ class ProductList {
         this._products = [];
     }
 
-    getTotalPrice() {
-        let totalPrice = 0;
-        for (const product of this._products) {
-            totalPrice += product.price;
-        }
-        return totalPrice;
-    }
+    getTotalPrice = () => this._products.reduce((a, product) => a += product.price, 0);
 }
 
 class ImageRepo {
@@ -293,18 +272,18 @@ class ProductRepo {
     static getProductsAllAsync() {
         return fetch(`${API}/catalogData.json`)
             .then(response => response.json())
-            .then(json => this._mapperFromGBAsync(json));
+            .then(json => this._convertToProductAsync(json));
     }
 
     static async getProductByIdAsync(id = 0) {
         return ProductRepo.getProductsAllAsync().then(products => products.find((product) => product.id === id));
     }
 
-    static async _mapperFromGBAsync(origin) {
-        return this._mapperFromGB(origin);
+    static async _convertToProductAsync(origin) {
+        return this._convertToProduct(origin);
     }
 
-    static _mapperFromGB(origin) {
+    static _convertToProduct(origin) {
         let result = [];
         for (const originItem of origin) {
             let { id_product, product_name, price } = originItem;

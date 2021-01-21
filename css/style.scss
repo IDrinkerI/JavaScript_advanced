@@ -5,18 +5,39 @@
 
 .main_header{
     background-color: lightgray;
+
+    
 }
 
-.cart{
+.header_cart_info-wrapper{
     height: 60px;
     display: flex;
     align-items: center;
     justify-content: start;
+}
 
-    &-btn{
+
+.cart{
+    visibility: hidden;
+
+    &-open_btn{
         padding: 2px 10px;
         font-size: 1.25rem;
         margin-left: auto;
+    }
+
+    &-title{
+        background-color:  rgb(185, 185, 185);
+        font-size: 2rem;
+        padding: 5px 10px;;
+    }
+
+    &-total_price{
+        text-align: right;
+        background-color: rgb(185, 185, 185);
+        font-size: 1.5rem;
+        padding: 5px 10px;;
+        padding-right: 50px;
     }
 }
 
@@ -49,5 +70,47 @@
             padding: 2px 6px;
             align-self: flex-end;
         }
+    }
+}
+
+.cart_item{
+    font-size: 1.15rem;
+    padding: 5px 10px;
+
+    &-title{
+        width:  400px;
+        display: inline-block;
+        overflow: hidden;
+    }
+
+    &-price{
+        width:  120px;
+        display: inline-block;
+        margin-right: 150px;
+    }
+
+    &-count{
+        width:  30px;
+        text-align: center;
+        display: inline-block;
+    }
+
+    &-total_price{
+        margin-left: 150px;
+        width:  200px;
+        display: inline-block;
+    }
+
+    &-button{
+        width: 20px;
+        height: 20px;
+    }
+
+    &:nth-child(even){
+        background-color: rgb(230, 230, 230);
+    }
+
+    &:nth-child(odd){
+        background-color: rgb(210, 210, 210);
     }
 }

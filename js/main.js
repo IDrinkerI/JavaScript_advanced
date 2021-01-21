@@ -23,11 +23,24 @@ class HTMLIdPrefix {
 }
 
 class Cart {
-    constructor(containerSelector) {
+    constructor(containerSelector, infoWrapperSelector) {
         this._items = [];
         this._container = document.querySelector(containerSelector);
+        this._container.classList.add("cart");
+
+        this._infoWrapper = document.querySelector(infoWrapperSelector);
+        this._infoWrapper.append(this._createOpenCartButton());
 
         this.render();
+    }
+
+    changeVisibility() {
+        if (this._container.style.visibility === "visible") {
+            this._container.style.visibility = "hidden";
+        }
+        else {
+            this._container.style.visibility = "visible";
+        }
     }
 
     add(product) {
@@ -45,8 +58,8 @@ class Cart {
         this.update();
     }
 
-    remove(product) {
-        let { object: cartItem, result: isFound } = this.tryGetCartItem(product.id);
+    remove(productId) {
+        let { object: cartItem, result: isFound } = this.tryGetCartItem(productId);
 
         if (isFound) {
             cartItem.setCount(0);
@@ -71,12 +84,14 @@ class Cart {
     render() {
         this._container.innerHTML = "";
 
+        let title = `<p class="cart-title">Cart:</p>`;
+        this._container.insertAdjacentHTML("beforeend", title);
+
         for (const item of this._items) {
             this._container.insertAdjacentHTML("beforeend", item.render());
         }
 
-        let totalPriceInfo = `<p>Goods count: ${this.getTotalCount()}. Total price: $${this.getTotalPrice()}</p>`;
-
+        let totalPriceInfo = `<p class="cart-total_price">Goods count: ${this.getTotalCount()}. Total price: $${this.getTotalPrice()}</p>`;
         this._container.insertAdjacentHTML("beforeend", totalPriceInfo);
     }
 
@@ -121,6 +136,14 @@ class Cart {
         if (isFound) {
             cartItem.decrementCount();
         }
+    }
+
+    _createOpenCartButton() {
+        let btn = document.createElement("button");
+        btn.classList.add("cart-open_btn");
+        btn.innerText = "Cart";
+        btn.onclick = ShopBehavior.cartOpenBtnHandler;
+        return btn;
     }
 }
 
@@ -174,6 +197,7 @@ class CartItem {
                     <span class="cart_item-count">${this._count}</span>
                     <button class="cart_item-button" onclick="ShopBehavior.incrementButtonHandler(event)">+</button>
                     <span class="cart_item-total_price">Total: $${this.getTotalPrice()}</span>
+                    <button class="cart_item-button" onclick="ShopBehavior.deleteCartItemBtnHadnler(event)">x</button>
                 </div>`;
     }
 }
@@ -284,28 +308,12 @@ class ProductRepo {
 class ShopBehavior {
     static _isSetup = false;
 
-    static setup(productListSelector, cartSelector) {
-        ShopBehavior.productList = new ProductList(productListSelector);
-        ShopBehavior.cart = new Cart(cartSelector);
+    static setup() {
+        ShopBehavior.productList = new ProductList(".products");
+        ShopBehavior.cart = new Cart(".cart_container", ".header_cart_info-wrapper");
+
         ShopBehavior._isSetup = true;
         return ShopBehavior;
-    }
-
-    static incrementButtonHandler(event) {
-        ShopBehavior.cart.incrementItemCount(event.target.parentNode.id);
-    }
-
-    static decrementButtonHandler(event) {
-        ShopBehavior.cart.decrementItemCount(event.target.parentNode.id);
-    }
-
-    static updateCartHandler() {
-        ShopBehavior.cart.update();
-    }
-
-    static addProductButtonHandler(event) {
-        let productId = Product.getIdByhtmlId(event.target.parentNode.id);
-        ProductRepo.getProductByIdAsync(productId).then(product => ShopBehavior.cart.add(product));
     }
 
     static run() {
@@ -316,5 +324,31 @@ class ShopBehavior {
         else {
             throw new Error("ShopBehavior need setup before run");
         }
+    }
+
+    static incrementButtonHandler(event) {
+        ShopBehavior.cart.incrementItemCount(event.target.parentNode.id);
+    }
+
+    static decrementButtonHandler(event) {
+        ShopBehavior.cart.decrementItemCount(event.target.parentNode.id);
+    }
+
+    static deleteCartItemBtnHadnler(event) {
+        let productId = CartItem.getIdByhtmlId(event.target.parentNode.id);
+        ShopBehavior.cart.remove(productId);
+    }
+
+    static addProductButtonHandler(event) {
+        let productId = Product.getIdByhtmlId(event.target.parentNode.id);
+        ProductRepo.getProductByIdAsync(productId).then(product => ShopBehavior.cart.add(product));
+    }
+
+    static cartOpenBtnHandler() {
+        ShopBehavior.cart.changeVisibility();
+    }
+
+    static updateCartHandler() {
+        ShopBehavior.cart.update();
     }
 }

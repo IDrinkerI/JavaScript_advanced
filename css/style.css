@@ -1,0 +1,22 @@
+.form {
+  margin: 0 auto;
+  width: 280px;
+  padding: 15px;
+  margin-top: 30vh;
+  border: 1px solid #000;
+}
+
+.form-field {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.form-btn {
+  display: block;
+  margin-left: auto;
+}
+
+.form-incorrect {
+  border-color: red;
+}
+/*# sourceMappingURL=style.css.map */

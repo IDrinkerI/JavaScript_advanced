@@ -3,16 +3,36 @@
     width: 280px;
     padding: 15px;
     margin-top: 30vh;
-    border: 1px solid #000;
+    border: 2px solid lightblue;
+    border-radius: 10px;
 
     &-field{
         width: 100%;
+        border: 2px solid lightskyblue;
+        border-radius: 6px;
         margin-bottom: 8px;
+        outline-style: none;
+        resize: none;
+    }
+
+    &-label{
+        color: rgb(66, 177, 247);
     }
 
     &-btn{
         display: block;
         margin-left: auto;
+        border-radius: 8px;
+        padding: 5px 10px;
+        background-color: lightblue;
+        color:  white;
+        outline-style: none;
+        border: none;
+
+        &:active{
+            background-color: rgb(78, 180, 243);
+            color: white;
+        }
     }
 
     &-incorrect{

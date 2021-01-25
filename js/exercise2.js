@@ -26,8 +26,8 @@ class Form {
         this._form.append(this._button);
 
         this.namePattern = new MatchPatter(/[a-z_\-]+/i, "Имя должно содержать только буквы");
-        this.phonePatter = new MatchPatter(/./i, "Телефон должен имееть вид +7(000)000-0000");
-        this.emailPattern = new MatchPatter(/./i, "E-mail имеет должен имееть вид mymail@mail.ru, или my.mail@mail.ru, или my-mail@mail.ru.");
+        this.phonePatter = new MatchPatter(/[+]{1}\d{1,3}\(\d{3,5}\)\d{3}-\d{4}/, "Телефон должен имееть вид +7(000)000-0000");
+        this.emailPattern = new MatchPatter(/[a-z-.]+@[a-z]+(\.ru|\.com)/i, "E-mail имеет должен имееть вид mymail@mail.ru, или my.mail@mail.ru, или my-mail@mail.ru.");
         this.textareaPattern = new MatchPatter();
     }
 

@@ -47,6 +47,7 @@ class Form {
 
     _addLabel(content) {
         let newLabel = document.createElement("label");
+        newLabel.classList.add("form-label");
         newLabel.innerText = content;
         this._form.append(newLabel);
     }

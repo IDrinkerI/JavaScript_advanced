@@ -6,25 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/style.css">
-    <title>Lesson 1</title>
+    <title>Lesson 3</title>
 </head>
 
 <body>
     <header class="main_header">
         <div class="container">
-            <div class="cart">
-                <button class="cart-btn">Cart</button>
-            </div>
+            <div class="header_cart_info-wrapper"></div>
         </div>
     </header>
 
     <main class="content">
         <div class="container">
             <div class="products"></div>
+            <div class="cart_container"></div>
         </div>
+
     </main>
 
     <script src="js/main.js"></script>
+    <script>
+        window.onload = () => ShopBehavior.setup().run();       
+    </script>
 </body>
 
 </html>
